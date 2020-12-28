@@ -1,0 +1,40 @@
+CC		= gcc
+RM		= del
+
+LDRIVER		= -mwindows -lgdi32 -mconsole
+
+#normal build
+OBJECTS		= syndrome.o res.o mm7.o snes.o
+CFLAGS		= -O3
+LFLAGS		= -s
+
+#debug build
+DOBJECTS	= syndromed.o res.o mm7d.o snesd.o
+DCFLAGS		= -g
+DLFLAGS		= -g
+
+
+all:		syndrome
+
+syndrome:	${OBJECTS}
+		${CC} ${LFLAGS} -o syndrome ${OBJECTS} ${LDRIVER}
+
+debug:		${DOBJECTS}
+		${CC} ${DLFLAGS} -o syndrome ${DOBJECTS} ${LDRIVER}
+
+clean:
+		${RM} syndrome.exe ${OBJECTS} ${DOBJECTS}
+
+syndrome.o:	syndrome.c syndrome.h
+mm7.o:		mm7.c mm7.h syndrome.h snes.h
+snes.o:		snes.c snes.h syndrome.h
+
+syndromed.o:	syndrome.c syndrome.h
+		${CC} -c ${DCFLAGS} -o $@ syndrome.c
+mm7d.o:		mm7.c mm7.h syndrome.h snes.h
+		${CC} -c ${DCFLAGS} -o $@ mm7.c
+snesd.o:	snes.c snes.h syndrome.h
+		${CC} -c ${DCFLAGS} -o $@ snes.c
+
+res.o:		res.res
+		windres -o res.o res.res

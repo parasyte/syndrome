@@ -1,0 +1,361 @@
+/*
+  Syndrome - MegaMan 7 (SNES) Editor
+  Copyright 2002-2004 Parasyte
+*/
+
+#include "mm7.h"
+
+
+//common pointers
+#define PTR_PALDATA		0x008456 /* Pointers to palette data */
+#define PTR_ROOMDATA	0x00914F /* Pointers to room data */
+#define PTR_ROOMSIZE	0x009179 /* Room data sizes */
+#define PTR_FGMAPDATA	0x009195 /* Pointers to foreground map data */
+#define PTR_BGMAPDATA	0x0091B1 /* Pointers to background map data */
+#define PTR_BLOCKDATA	0x0091CD /* Pointers to block data */
+//#define PTR_TYPEDATA	0x0091F7 /* Pointers to "block\structure type" data */
+#define PTR_CMPDATA		0x00E993 /* Pointers to compressed data */
+#define PTR_STAGEHEAD	0x00ED2B /* Pointers to stage headers */
+#define PTR_STAGEPAL	0x00FB04 /* Pointers to stage palette headers */
+#define PTR_STRUCTDATA	0x0A5600 /* Pointers to structure data */
+
+
+//globals
+int mm7Stage;
+u8 TileData[0x200] = {
+	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+	0xFF, 0x00, 0xFF, 0x00, 0xFF, 0x00, 0xFF, 0x00,
+	0xFF, 0x00, 0xFF, 0x00, 0xFF, 0x00, 0xFF, 0x00,
+	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+	0x00, 0xFF, 0x00, 0xFF, 0x00, 0xFF, 0x00, 0xFF,
+	0x00, 0xFF, 0x00, 0xFF, 0x00, 0xFF, 0x00, 0xFF,
+	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+	0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
+	0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
+	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+	0xFF, 0x00, 0xFF, 0x00, 0xFF, 0x00, 0xFF, 0x00,
+	0xFF, 0x00, 0xFF, 0x00, 0xFF, 0x00, 0xFF, 0x00,
+	0xFF, 0x00, 0xFF, 0x00, 0xFF, 0x00, 0xFF, 0x00,
+	0xFF, 0x00, 0xFF, 0x00, 0xFF, 0x00, 0xFF, 0x00,
+	0xFF, 0x00, 0xFF, 0x00, 0xFF, 0x00, 0xFF, 0x00,
+	0xFF, 0x00, 0xFF, 0x00, 0xFF, 0x00, 0xFF, 0x00,
+	0x00, 0xFF, 0x00, 0xFF, 0x00, 0xFF, 0x00, 0xFF,
+	0x00, 0xFF, 0x00, 0xFF, 0x00, 0xFF, 0x00, 0xFF,
+	0xFF, 0x00, 0xFF, 0x00, 0xFF, 0x00, 0xFF, 0x00,
+	0xFF, 0x00, 0xFF, 0x00, 0xFF, 0x00, 0xFF, 0x00,
+	0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
+	0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
+	0xFF, 0x00, 0xFF, 0x00, 0xFF, 0x00, 0xFF, 0x00,
+	0xFF, 0x00, 0xFF, 0x00, 0xFF, 0x00, 0xFF, 0x00,
+	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+	0x00, 0xFF, 0x00, 0xFF, 0x00, 0xFF, 0x00, 0xFF,
+	0x00, 0xFF, 0x00, 0xFF, 0x00, 0xFF, 0x00, 0xFF,
+	0xFF, 0x00, 0xFF, 0x00, 0xFF, 0x00, 0xFF, 0x00,
+	0xFF, 0x00, 0xFF, 0x00, 0xFF, 0x00, 0xFF, 0x00,
+	0x00, 0xFF, 0x00, 0xFF, 0x00, 0xFF, 0x00, 0xFF,
+	0x00, 0xFF, 0x00, 0xFF, 0x00, 0xFF, 0x00, 0xFF,
+	0x00, 0xFF, 0x00, 0xFF, 0x00, 0xFF, 0x00, 0xFF,
+	0x00, 0xFF, 0x00, 0xFF, 0x00, 0xFF, 0x00, 0xFF,
+	0x00, 0xFF, 0x00, 0xFF, 0x00, 0xFF, 0x00, 0xFF,
+	0x00, 0xFF, 0x00, 0xFF, 0x00, 0xFF, 0x00, 0xFF,
+	0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
+	0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
+	0x00, 0xFF, 0x00, 0xFF, 0x00, 0xFF, 0x00, 0xFF,
+	0x00, 0xFF, 0x00, 0xFF, 0x00, 0xFF, 0x00, 0xFF,
+	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+	0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
+	0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
+	0xFF, 0x00, 0xFF, 0x00, 0xFF, 0x00, 0xFF, 0x00,
+	0xFF, 0x00, 0xFF, 0x00, 0xFF, 0x00, 0xFF, 0x00,
+	0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
+	0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
+	0x00, 0xFF, 0x00, 0xFF, 0x00, 0xFF, 0x00, 0xFF,
+	0x00, 0xFF, 0x00, 0xFF, 0x00, 0xFF, 0x00, 0xFF,
+	0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
+	0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
+	0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
+	0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
+	0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
+	0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF
+};
+
+
+/*
+  mm7LoadPal - Loads palette from the standard palette headers
+  input args:
+    pal: outputs the created palette
+    index: selects the palette index to load
+*/
+void mm7LoadPal(u16 *pal, u16 index) {
+	u32 addr,src;
+	u16 len;
+	u8 dst;
+	int i;
+
+	addr = (PTR_PALDATA + ((index & 0xFF) << 1));
+	addr = ((filedata[addr+1] << 8) | filedata[addr]);
+
+	while ((len = filedata[addr++])) {
+		src = (0x040000 | (filedata[addr+1] << 8) | filedata[addr]);
+		addr += 2;
+
+		dst = filedata[addr++];
+		for (i = dst; i < (dst+len); i++) {
+			pal[i] = ((filedata[src+1] << 8) | filedata[src]);
+			src += 2;
+		}
+
+#ifdef DEBUGGY
+		printf(" Loaded palette index %d\n  len =     0x%02X\n  src = 0x%06X\n  dst =     0x%02X\n",index,len,(src-(len<<1)),dst);
+#endif //DEBUGGY
+	}
+}
+
+/*
+  mm7LoadStagePal - Loads complete palette for a MegaMan 7 stage
+  returns: 0 on success, else error
+  input args:
+    pal: outputs the created palette
+    palswap: selects which "sub-palette" to load for mid-stage palette swapping
+    stage: selects the stage palette to load
+*/
+int mm7LoadStagePal(u16 *pal, u8 palswap, u8 stage) {
+	u32 addr;
+
+	if (stage > 13) return 1;
+
+	addr = (PTR_STAGEPAL + (stage*2));
+	addr = ((filedata[addr+1] << 8) | filedata[addr]);
+	addr += PTR_STAGEPAL;
+	addr += (palswap * 3);
+
+	mm7LoadPal(pal,filedata[addr++]);
+	pal[0] = ((filedata[addr+1] << 8) | filedata[addr]);
+
+	return 0;
+}
+
+/*
+  mm7BuildStage - Builds a complete MegaMan 7 stage
+  returns: 0 on success, else error
+  input args:
+    fgmap: outputs the created foreground tilemap
+    bgmap: outputs the created background tilemap
+    stage: selects the stage to build
+*/
+int mm7BuildStage(TILEMAP *fgmap, TILEMAP *bgmap, u8 stage) {
+	u32 addr;
+	u16 palette[128];
+	int x,y;
+
+
+	if (stage > 13) return 1;
+	mm7Stage = stage;
+
+	//setup foreground tilemap ...
+
+	//decompress tiles
+	addr = (PTR_STAGEHEAD + ((stage + 0x10) * 2));
+	addr = ((filedata[addr+1] << 8) | filedata[addr]); //load pointer
+
+	memcpy(fgmap->tiles,TileData,0x200);
+	if (mm7decmp((fgmap->tiles+0x200),0x7E00,filedata[addr])) return 1; //decompression error
+
+	//set width and height
+	addr = (PTR_FGMAPDATA + (stage * 2));
+	addr = (0x10000 | (filedata[addr+1] << 8) | filedata[addr]); //load pointer
+
+	fgmap->w = (filedata[addr++] << 5); //*32
+	fgmap->h = (filedata[addr++] << 5); //*32
+#ifdef DEBUGGY
+	printf(" Stage size: %dx%d pixels\n",(fgmap->w << 3),(fgmap->h << 3));
+#endif //DEBUGGY
+
+	//allocate memory for map
+	fgmap->map = (u16*)malloc(fgmap->w * fgmap->h * sizeof(u16));
+	if (!(fgmap->map)) { //unable to allocate memory
+		snesDeleteTilemap(fgmap);
+		return 1;
+	}
+
+	//draw map
+	for (y = 0; y < fgmap->h; y+=32) {
+		for (x = 0; x < fgmap->w; x+=32) {
+			mm7BuildRoom(fgmap, x, y, filedata[addr++]);
+		}
+	}
+
+	//build palette
+	memset(palette,0,(128*sizeof(u16)));
+	mm7LoadStagePal(palette,0,stage);
+	snesDecodePal(fgmap->pal,palette);
+
+
+	//setup background tilemap ...
+
+	//copy tiles
+	memcpy(bgmap->tiles,fgmap->tiles,0x8000);
+
+	//set width and height
+	addr = (PTR_BGMAPDATA + (stage * 2));
+	addr = (0x10000 | (filedata[addr+1] << 8) | filedata[addr]); //load pointer
+
+	bgmap->w = (filedata[addr] << 5); //*32
+	bgmap->h = fgmap->h;
+	addr += 2;
+
+	//allocate memory for map
+	bgmap->map = (u16*)malloc(bgmap->w * bgmap->h * sizeof(u16));
+	if (!(bgmap->map)) { //unable to allocate memory
+		snesDeleteTilemap(fgmap);
+		snesDeleteTilemap(bgmap);
+		return 1;
+	}
+
+	//draw map
+	for (y = 0; y < bgmap->h; y+=32) {
+		for (x = 0; x < bgmap->w; x+=32) {
+			mm7BuildRoom(bgmap, x, y, filedata[addr++]);
+		}
+	}
+
+	//copy palette
+	memcpy(bgmap->pal,fgmap->pal,(128*sizeof(u32)));
+	//memcpy(palette,(filedata+0x48640),(128*sizeof(u16)));
+	//memcpy(palette,(filedata+0x48620),(16*sizeof(u16)));
+	//snesDecodePal(bgmap->pal,palette); //FIX ME!
+
+	return 0;
+}
+
+/*
+  mm7BuildRoom - Builds a MegaMan 7 room
+  input args:
+    tilemap: tilemap for output
+    x: starting x-coordinate in tilemap
+    y: starting y-coordinate in tilemap
+    room: room number to build
+*/
+void mm7BuildRoom(TILEMAP *tilemap, u32 x, u32 y, u16 room) {
+	u32 addr;
+	int tx,ty;
+
+	addr = (PTR_ROOMDATA + (mm7Stage * 3));
+	addr = (((filedata[addr+2] - 0xC0) << 16) | (filedata[addr+1] << 8) | filedata[addr]); //load pointer
+	addr += (room << 7);
+
+	for (ty = 0; ty < 32; ty+=4) {
+		for (tx = 0; tx < 32; tx+=4) {
+			mm7BuildStruct(tilemap, (x+tx), (y+ty), ((filedata[addr+1] << 8) | filedata[addr]));
+			addr += 2;
+		}
+	}
+}
+
+/*
+  mm7BuildStruct - Builds a MegaMan 7 structure
+  input args:
+    tilemap: tilemap for output
+    x: starting x-coordinate in tilemap
+    y: starting y-coordinate in tilemap
+    structure: structure number to build
+*/
+void mm7BuildStruct(TILEMAP *tilemap, u32 x, u32 y, u16 structure) {
+	u32 addr;
+	int tx,ty;
+
+	addr = (PTR_STRUCTDATA + (mm7Stage * 3));
+	addr = (((filedata[addr+2] + 0x0A) << 16) | ((filedata[addr+1] + 0x56) << 8) | filedata[addr]); //load pointer
+	addr += structure;
+
+	for (ty = 0; ty < 4; ty+=2) {
+		for (tx = 0; tx < 4; tx+=2) {
+			mm7BuildBlock(tilemap, (x+tx), (y+ty), ((filedata[addr+1] << 8) | filedata[addr]));
+			addr += 2;
+		}
+	}
+}
+
+/*
+  mm7BuildBlock - Builds a MegaMan 7 Block
+  input args:
+    tilemap: tilemap for output
+    x: starting x-coordinate in tilemap
+    y: starting y-coordinate in tilemap
+    block: block number to build
+*/
+void mm7BuildBlock(TILEMAP *tilemap, u32 x, u32 y, u16 block) {
+	u32 addr;
+	int tx,ty;
+
+	addr = (PTR_BLOCKDATA + (mm7Stage * 3));
+	addr = (((filedata[addr+2] - 0xC0) << 16) | (filedata[addr+1] << 8) | filedata[addr]); //load pointer
+	addr += (block << 3);
+
+	for (ty = 0; ty < 2; ty++) {
+		for (tx = 0; tx < 2; tx++) {
+			//if ((x+tx)+((y+ty)*tilemap->w) >= (tilemap->w*tilemap->h)) return;
+			tilemap->map[(x+tx)+((y+ty)*tilemap->w)] = ((filedata[addr+1] << 8) | filedata[addr]);
+			addr += 2;
+		}
+	}
+}
+
+/*
+  mm7decmp - decompress data from MegaMan 7 ROM
+  returns: 0 on error, else error
+  input args:
+    decmp: pointer to output buffer
+    size: size of the buffer
+    index: compressed data index, range: 0 - 183
+*/
+int mm7decmp(u8 *decmp, u32 size, u16 index) {
+	u32 source,oldsrc;
+	u16 addr,count=0,decmpsize;
+	u8 ctrl;
+	int i,j,k,x=0;
+
+	if (index > 183) return 1;
+
+	addr = (PTR_CMPDATA+(index*5));
+	source = (((filedata[addr+2] - 0xC0) << 16) | (filedata[addr+1] << 8) | filedata[addr]);
+	decmpsize = ((filedata[addr+4] << 8) | filedata[addr+3]);
+
+	if (decmpsize > size) return 1;
+
+	//if (!(decmp = (u8*)malloc(decmpsize+0x200))) return 0;
+	//memcpy(decmp,TileData,0x200);
+	memset(decmp,0,0x8000);
+
+	oldsrc=source;
+	while (count < decmpsize) {
+		ctrl = filedata[source++];
+
+		for (i = 0; i < 8; i++) {
+			if (ctrl & 0x80) {
+				j = filedata[source] >> 2;
+				k = ((filedata[source] & 3) << 8) | filedata[source+1];
+				source+=2;
+				while (j--) {
+					decmp[count] = decmp[count-k];
+					count++;
+				}
+			}
+			else decmp[count++] = filedata[source++];
+			if ((count-0x200) >= decmpsize) break;
+			ctrl <<= 1;
+		}
+	}
+
+	return 0;
+}

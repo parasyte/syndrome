@@ -1,0 +1,3 @@
+#!/bin/sh
+
+xulrunner src/application.ini $@

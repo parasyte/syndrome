@@ -1,0 +1,5 @@
+#!/bin/sh
+
+rm -rf /Applications/Kodewerx
+/Library/Frameworks/XUL.framework/xulrunner-bin --install-app $(pwd)/src
+/Applications/Kodewerx/Syndrome.app/Contents/MacOS/xulrunner $@

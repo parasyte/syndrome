@@ -1,0 +1,93 @@
+<?xml version="1.0"?>
+
+<!-- ***** BEGIN LICENSE BLOCK *****
+   - Version: MPL 1.1/GPL 2.0/LGPL 2.1
+   -
+   - The contents of this file are subject to the Mozilla Public License Version
+   - 1.1 (the "License"); you may not use this file except in compliance with
+   - the License. You may obtain a copy of the License at
+   - http://www.mozilla.org/MPL/
+   -
+   - Software distributed under the License is distributed on an "AS IS" basis,
+   - WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+   - for the specific language governing rights and limitations under the
+   - License.
+   -
+   - The Original Code is Syndrome.
+   -
+   - The Initial Developer of the Original Code is
+   - Jason Oster <parasyte at kodewerx org>.
+   - Portions created by the Initial Developer are Copyright (C) 2009
+   - the Initial Developer. All Rights Reserved.
+   -
+   - Contributor(s):
+   -
+   - Alternatively, the contents of this file may be used under the terms of
+   - either the GNU General Public License Version 2 or later (the "GPL"), or
+   - the GNU Lesser General Public License Version 2.1 or later (the "LGPL"),
+   - in which case the provisions of the GPL or the LGPL are applicable instead
+   - of those above. If you wish to allow use of your version of this file only
+   - under the terms of either the GPL or the LGPL, and not to allow others to
+   - use your version of this file under the terms of the MPL, indicate your
+   - decision by deleting the provisions above and replace them with the notice
+   - and other provisions required by the GPL or the LGPL. If you do not delete
+   - the provisions above, a recipient may use your version of this file under
+   - the terms of any one of the MPL, the GPL or the LGPL.
+   -
+   - ***** END LICENSE BLOCK ***** -->
+
+<?xml-stylesheet href="chrome://global/skin/" type="text/css"?>
+
+<!DOCTYPE window SYSTEM "chrome://syndrome/locale/syndrome.dtd">
+
+<window
+    xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
+    xmlns:html="http://www.w3.org/1999/xhtml"
+    persist="screenX screenY width height"
+    id="syndrome_window"
+    title="&app.name;"
+    style="min-width: 600px; min-height: 350px;">
+
+    <script src="chrome://syndrome/content/debug.js"/>
+    <script src="chrome://syndrome/content/snes.js"/>
+    <script src="chrome://syndrome/content/syndrome.js"/>
+    <script src="chrome://syndrome/content/mm7.js"/>
+
+    <keyset id="syndrome_keyset">
+        <key id="keyopen" modifiers="accel" key="&key.open;" oncommand="openFile();"/>
+        <key id="keyquit" modifiers="accel" key="&key.quit;" oncommand="quit();"/>
+        <key id="keyexportpng" modifiers="accel" key="&key.exportpng;" oncommand="exportPNG();"/>
+        <key id="keynextstage" modifiers="accel" keycode="&key.nextstage;" oncommand="editor.nextStage(); refresh();"/>
+        <key id="keyprevstage" modifiers="accel" keycode="&key.prevstage;" oncommand="editor.prevStage(); refresh();"/>
+    </keyset>
+
+    <menubar id="syndrome_menubar">
+        <menu id="syndrome_menufile" label="&menu.file;" accesskey="&key.file;">
+            <menupopup id="syndrome_menupopupfile">
+                <menuitem id="syndrome_menufileopen" label="&menufile.open;" accesskey="&key.open;" key="keyopen" oncommand="openFile();"/>
+                <menuitem id="syndrome_menufilesave" label="&menufile.save;"/>
+                <menuseparator/>
+                <menu id="syndrome_menufileexport" label="&menufile.export;">
+                    <menupopup id="syndrome_menupopupfileexport">
+                        <menuitem id="syndrome_menufileexportpng" label="&menufileexport.png;" accesskey="&key.exportpng;" key="keyexportpng" oncommand="exportPNG();"/>
+                    </menupopup>
+                </menu>
+                <menuitem id="syndrome_menufileclose" label="&menufile.close;"/>
+                <menuseparator id="menu_FileQuitSeparator"/>
+                <menuitem id="menu_FileQuitItem" label="&menufile.quit;" accesskey="&key.quit;" key="keyquit" oncommand="quit();"/>
+            </menupopup>
+        </menu>
+        <menu id="syndrome_menuedit" label="&menu.edit;" accesskey="&key.edit;">
+            <menupopup id="syndrome_menupopupedit">
+                <menuitem id="syndrome_menueditundo" label="&menuedit.undo;"/>
+                <menuitem id="syndrome_menueditredo" label="&menuedit.redo;"/>
+            </menupopup>
+        </menu>
+    </menubar>
+
+    <vbox id="syndrome_vbox" flex="1" style="overflow: auto;">
+        <box id="syndrome_box">
+            <html:canvas id="syndrome_canvas"></html:canvas>
+        </box>
+    </vbox>
+</window>
